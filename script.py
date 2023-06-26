@@ -1,5 +1,5 @@
 from abc import ABC
-
+03 20 18 86 79 / 03 20 18 86 08
 class Rectangle:
     """Classe définissant un rectangle caractérisé par sa longueur et sa largeur"""
     def __init__(self, length, width, color="red"):
