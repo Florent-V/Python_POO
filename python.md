@@ -1033,35 +1033,115 @@ admin.site.register(Band, BandAdmin) # nous modifions cette ligne, en ajoutant u
 
 ### Relation Many To One avec une clé étrangère
 
+Pour créer une clé étrangère ``band_id`` dans l'entité Listing avec l'id d'un band correspondant :
 
-
-
-
-
-
-
-
+![python](img/python16.png)
 
 
 ``` python
-```
-``` python
+class Listing(models.Model):
+
+   ...
+   band = models.ForeignKey(Band, null=True, on_delete=models.SET_NULL)
 ```
 
-``` python
+On nomme ce champ ``band``. Cela permettra d'obtenir le groupe de n'importe quel annonce en appelant ``listing.band``. On passe également trois argument à ``ForeignKey`` :
+- le modèle auquel on veut se rattacher : **Band**,
+- **null=True** parce que l'on veut permettra la création d'annonce même si elles ne sont pas directement liées à un groupe,
+- **on_delete=models.SET_NULL** : c'est ici que l'on décide de la stratégie à suivre lorsque les objets Band sont supprimés :
+  - définir band comme null en utilisant models.SET_NULL
+  - définir band à sa valeur par défaut en utilisant models.SET_DEFAULT,
+  - supprimer l'objet Listing en utilisant models.CASCADE
+  - autres https://docs.djangoproject.com/fr/3.2/ref/models/fields/#foreignkey
+
+
+Ici on utilise **SET_NULL** pour ne pas supprimer l'annonce si un Band est supprimé.
+
+Pour enregistrer les modifications en base de données on n'oublie pas les commandes suivantes :
+
+``` sh
+python manage.py makemigrations
+python manage.py migrate
 ```
 
-``` python
-```
+Dans l'administration de Django, pour ajouter une annonce (entité Listing), on se rend à l'adresse suivante :  
+http://127.0.0.1:8000/admin/listings/listing/add/
+
+Et on observe :
+![python](img/python17.png)
+
+On modifie ensuite l'affichage du panneau admin pour faire apparaître le groupe dans chaque annonce :
 
 ``` python
+class ListingAdmin(admin.ModelAdmin):
+list_display = ('title', 'band')  # ajouter ‘band' ici
+```
+![python](img/python18.png)
+
+### Annuler une migration
+
+#### La migration n'a pas été partagée avec d'autres développeurs
+
+Exemple :
+``` python
+class Band(models.Model):
+
+   …
+   like_new = models.fields.BooleanField(default=False)
+```
+Puis on exécute les migrations :
+``` sh
+python manage.py makemigrations
+python manage.py migrate
 ```
 
-``` python
+Ensuite on lance la commande suivante pour lister les migrations :
+
+``` sh
+python manage.py showmigrations
 ```
 
-``` python
+![python](img/python19.png)
+
+On trouve le nom de la migration qui doit être annulée ici ``0006_band_like_new``, et on récupère le nom de la migration précédente ``0005_listing_band`` et le nom de l'application correspondante listings.
+
+Pour annuler la migration on lance alors la commande suivante :
+
+``` sh
+python manage.py migrate listings 0005_listing_band
 ```
+On peut alors constater :
+![python](img/python20.png)
+
+La migration a donc été annulée mais pas supprimer. Si on veut le faire il faut lancer la commande suivante :
+``` sh
+ rm listings/migrations/0006_band_like_new.py 
+```
+
+#### La migration n'a pas été partagée avec d'autres développeurs
+
+Si les migrations ont déjà été partagées et jouées sur un autre ordinateur, la méthode précédente ne fonctionne pas. Il faut recréer une nouvelle migration pour annuler les modifications.
+
+Pour ce cas de figure, il suffit de supprimer la ligne rajoutée précédemment pour ensuite créer et exécuter les migrations.
+
+
+#### Les conflits de migration
+
+Lorsque plusieurs développeurs travaillent sur un même projet, ils peuvent créer des migrations sur leur branche de travail. Cependant, lors de la fusion des branches, il y aura donc plusieurs migrations avec le même numéro. Exemple :
+![python](img/python21.png)
+
+Mais si on essait de jouer les migrations, il se produira une erreur :
+![python](img/python22.png)
+
+Comme les deux migrations ont le même numéro, python ne sait pas quelle migration exécuter en premier. Pour cela, comme indiquer dans le message d'erreur, on va utiliser le flag --merge
+
+![python](img/python23.png)
+
+Attention : cette technique ne fonctionne que si les migrations n'affectent pas le même champ sur le même modèle. Si tel est le cas, le meilleure chose est de supprimer les migrations en conflit et d'en créer de nouvelles à la place.
+
+## Construire une interface CRUD avec Django
+
+
 
 ``` python
 ```
