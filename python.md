@@ -1,3 +1,68 @@
+- [Notes Python](#notes-python)
+- [POO en Python](#poo-en-python)
+  - [POO : Les classes](#poo--les-classes)
+    - [Introduction](#introduction)
+    - [Syntaxe en python](#syntaxe-en-python)
+      - [Création d'une classe](#création-dune-classe)
+      - [Instanciation d'une classe](#instanciation-dune-classe)
+      - [Accès et Modification d'un objet](#accès-et-modification-dun-objet)
+    - [L'héritage en python](#lhéritage-en-python)
+      - [L'héritage](#lhéritage)
+      - [La surcharge](#la-surcharge)
+      - [L'héritage multiple](#lhéritage-multiple)
+      - [super()](#super)
+    - [Les méthodes magiques](#les-méthodes-magiques)
+    - [Les décorateurs en python](#les-décorateurs-en-python)
+- [Django](#django)
+  - [Introduction](#introduction-1)
+  - [Les bases d'une application Django avec le modèle MVT](#les-bases-dune-application-django-avec-le-modèle-mvt)
+    - [Configuration d'un projet](#configuration-dun-projet)
+      - [Générer le code de base du projet](#générer-le-code-de-base-du-projet)
+      - [Exécuter le serveur de développement](#exécuter-le-serveur-de-développement)
+      - [Créer la base de données du projet](#créer-la-base-de-données-du-projet)
+      - [Générer le code de page pour une application Django.](#générer-le-code-de-page-pour-une-application-django)
+    - [Afficher du contenu à l'aide d'une vue](#afficher-du-contenu-à-laide-dune-vue)
+      - [Exemples suplémentaires](#exemples-suplémentaires)
+    - [Sauvegardez les données à l'aide d'un modèle](#sauvegardez-les-données-à-laide-dun-modèle)
+      - [Création d'un modèle](#création-dun-modèle)
+      - [Migrations](#migrations)
+      - [Utilisation du Shell pour enregistrer des objets en BDD](#utilisation-du-shell-pour-enregistrer-des-objets-en-bdd)
+      - [Afficher les données dans la vue](#afficher-les-données-dans-la-vue)
+      - [Exemple supplémentaire :](#exemple-supplémentaire-)
+    - [Séparer la logique de l'application de la présentation avec un gabarit Django](#séparer-la-logique-de-lapplication-de-la-présentation-avec-un-gabarit-django)
+      - [Utilisation d'un gabarit](#utilisation-dun-gabarit)
+      - [Passer un objet au gabarit](#passer-un-objet-au-gabarit)
+      - [Fonctionnalités des gabarits](#fonctionnalités-des-gabarits)
+      - [Bilan](#bilan)
+    - [Ajoutez structure et style au site internet](#ajoutez-structure-et-style-au-site-internet)
+      - [Templating](#templating)
+      - [Ajouter du CSS](#ajouter-du-css)
+  - [Gérer les données à l'aide du site de l'adminsitration de Django](#gérer-les-données-à-laide-du-site-de-ladminsitration-de-django)
+    - [Capturer les données avec des modèles et des champs](#capturer-les-données-avec-des-modèles-et-des-champs)
+    - [CRUD dans l'administration Django](#crud-dans-ladministration-django)
+    - [Relation Many To One avec une clé étrangère](#relation-many-to-one-avec-une-clé-étrangère)
+    - [Annuler une migration](#annuler-une-migration)
+      - [La migration n'a pas été partagée avec d'autres développeurs](#la-migration-na-pas-été-partagée-avec-dautres-développeurs)
+      - [La migration n'a pas été partagée avec d'autres développeurs](#la-migration-na-pas-été-partagée-avec-dautres-développeurs-1)
+      - [Les conflits de migration](#les-conflits-de-migration)
+  - [Construire une interface CRUD avec Django](#construire-une-interface-crud-avec-django)
+    - [R : Read](#r--read)
+      - [Afficher tous les objets en vue liste](#afficher-tous-les-objets-en-vue-liste)
+      - [Afficher la vue détailler d'un objet](#afficher-la-vue-détailler-dun-objet)
+    - [C : Create](#c--create)
+      - [Formulaire de contact](#formulaire-de-contact)
+      - [Formulaire de création d'un objet](#formulaire-de-création-dun-objet)
+    - [U : Update](#u--update)
+    - [D : Delete](#d--delete)
+    - [Les templates des différentes pages nécessaire au CRUD :](#les-templates-des-différentes-pages-nécessaire-au-crud-)
+      - [Liste et vue détaillée](#liste-et-vue-détaillée)
+      - [Create](#create)
+      - [Update](#update)
+      - [Delete](#delete)
+  - [Construire une application d'authentification dans Django](#construire-une-application-dauthentification-dans-django)
+    - [Personnalisez le modèle utilisateur Django](#personnalisez-le-modèle-utilisateur-django)
+    - [Personnaliser le modèle utilisateur](#personnaliser-le-modèle-utilisateur)
+
 # Notes Python
 
 # POO en Python
@@ -324,12 +389,12 @@ python -m venv env
 Un répertoire ``env`` a donc été créé. Il faudra l'ajouter au ``.gitignore``.
 Il faut alors activer l'environement virtuel :  
 Sur linux :
-``` python
+``` sh
 source env/bin/activate
 ```
 Sur windows
 
-``` python
+``` sh
 source env/Scripts/activate
 ```
 Le (env) au début du chemin indique que l'environnement virtuel est bien activé.
@@ -1141,7 +1206,573 @@ Attention : cette technique ne fonctionne que si les migrations n'affectent pas 
 
 ## Construire une interface CRUD avec Django
 
+Après avoir fait un CRUD back-end, ici on s'interesse au CRUD front-end.
 
+### R : Read
+
+Le "R" permet d'afficher :
+- une vue en liste qui affiche tous les objets d'un modèle avec un minimum de détails
+- une vue détaillée qui affiche un objet avec tous ses détails et tous les champs affichés.
+
+#### Afficher tous les objets en vue liste
+
+Exemple : affichage de la liste de tous les groupes
+
+Dans le fichier ``view.py`` :
+
+``` python
+# listings/views.py
+
+def band_list(request):  # renommer la fonction de vue
+   bands = Band.objects.all()
+   return render(request,
+           'listings/band_list.html',  # pointe vers le nouveau nom de modèle
+           {'bands': bands})
+```
+Et on rajoute le pattern dans ``url.py``
+``` python
+urlpatterns = [
+   ...
+   path('bands/', views.band_list, name='band_list'),  # mise à jour du chemin et de la vue
+   ...
+]
+```
+
+#### Afficher la vue détailler d'un objet
+
+Exemple : affichage de la liste de tous les groupes
+
+``` python
+# listings/views.py
+
+…
+def band_detail(request, band_id):
+    band = Band.objects.get(id=band_id)
+    return render(request,
+                  'listings/band_detail.html',
+                  {'band': band}
+                  )
+```
+
+Si on nomme l'entier correspondant 'id' dans le modèle ou dans la vue, il masquera la fonction id intégrée de Python. Ce n'est pas un problème si on n'a pas l'intention de l'utiliser. Pour éviter cela on peut l'appeler band_id par exemple.
+
+
+Et on rajoute le pattern dans ``url.py``
+``` python
+urlpatterns = [
+   ...
+   path('bands/', views.band_list, name='band_list'),  # mise à jour du chemin et de la vue
+   path('bands/<int:band_id>/', views.band_detail, name='band_detail'),
+   ...
+]
+```
+Pour gérer les 404 : 
+
+``` python
+from django.shortcuts import get_object_or_404
+
+def my_view(request):
+    obj = get_object_or_404(MyModel, pk=1)
+
+# ou
+
+from django.http import Http404
+
+def my_view(request):
+    try:
+        obj = MyModel.objects.get(pk=1)
+    except MyModel.DoesNotExist:
+        raise Http404("No MyModel matches the given query.")
+```
+
+Pour rajouter un lien dans une vue on procède comme cela :
+``` python
+<a href="{% url 'band-detail' band.id %}">{{ band.name }}</a>
+```
+
+### C : Create
+
+Pour créer une entité, on va donc utiliser des formulaires.
+
+#### Formulaire de contact
+On commencer par créer le fichier ``form.py`` pour créer le formulaire de contact :
+
+``` python
+# listings/forms.py
+class ContactUsForm(forms.Form):
+   name = forms.CharField(required=False)
+   email = forms.EmailField()
+   message = forms.CharField(max_length=1000)
+```
+
+Dans le fichier ``view.py`` :
+``` python
+def contact(request):
+  print('La méthode de requête est : ', request.method)
+  print('Les données POST sont : ', request.POST)
+  if request.method == 'POST':
+     # créer une instance de notre formulaire et le remplir avec les données POST
+    form = ContactUsForm(request.POST)
+    if form.is_valid():
+      send_mail(
+        subject=f'Message from {form.cleaned_data["name"] or "anonyme"} via MerchEx Contact Us form',
+        message=form.cleaned_data['message'],
+        from_email=form.cleaned_data['email'],
+        recipient_list=['admin@merchex.xyz'],
+      )
+    return redirect('email_sent')  # ajoutez cette instruction de retour
+    # si le formulaire n'est pas valide, nous laissons l'exécution continuer jusqu'au return
+    # ci-dessous et afficher à nouveau le formulaire (avec des erreurs).
+  else:
+    # ceci doit être une requête GET, donc créer un formulaire vide
+    form = ContactUsForm()
+  return render(request,
+          'listings/contact.html',
+          {'form': form})  # passe ce formulaire au gabarit
+```
+
+Cette fonction permet de générer le formulaire et gère le type de requête : GET pour l'affichage du formaire et POST pour l'envoie des données.
+
+Les critères de validation doivent être indiqués dans le fichier ``form.py``.
+
+Pour l'envoie du mail en mode développement on peut écrire dans le fichier setting.py :
+``` python
+# merchex/settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+```
+Cela affichera les mails dans le terminal.
+
+Côté template ``contact.html``, cela donne :
+``` html
+{% extends 'listings/base.html' %}
+
+{% block content %}
+
+<p>Nous sommes là pour vous aider.</p>
+
+<form action="" method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Envoyer">
+</form>
+
+
+{% endblock %}
+```
+
+On oublie pas de mettre à jour le fichier ``url.py`` :
+
+``` python
+urlpatterns = [
+  ...
+  path('contact-us/', views.contact, name='contact'),
+]
+```
+
+Pour tester la validation côté serveur, on peut utiliser l'attribut ``novalidate`` dans la balise form. Cela va annuler la validation côté navigateur.
+``` html
+# listings/templates/listings/contact.html
+
+<form action="" method="post" novalidate>
+```
+
+#### Formulaire de création d'un objet
+
+Exemple création d'un groupe.
+
+On commencer par créer le formulaire dans ``form.py`` :  
+On pourrait commencer comme précédemment :
+``` python
+class BandForm(forms.Form):
+   name = forms.CharField(max_length=100)
+   biography = forms.CharField(max_length=1000)
+   year_formed = forms.IntegerField(min_value=1900, max_value=2021)
+   official_homepage = forms.URLField(required=False)
+```
+Cependant on répète beaucoup de code déjà présent dans la création du modèle. Avec Django on peut créer un formulaire à partir d'un modèle avec un ``ModelForm`` :
+``` python
+class BandForm(forms.ModelForm):
+    class Meta:
+        model = Band
+        #fields = ['name', 'genre', 'biography', 'year_formed', 'active', 'official_homepage']
+        #fields = '__all__'
+        exclude = ('active', 'official_homepage')  # ajoutez cette ligne
+```
+Il y a plusieurs moyens de choisir les champs que l'on veut afficher dans le formulaire.
+
+On crée la fonction dans le fichier ``view.py`` :
+``` python
+def band_create(request):
+  if request.method == 'POST':
+    form = BandForm(request.POST)
+    if form.is_valid():
+      band = form.save()
+      return redirect('band_detail', band_id=band.id)
+  else:
+    form = BandForm()
+  return render(request,
+                'listings/band_create.html',
+                {'form': form}
+                )
+```
+
+On commence par ajouter la route dans le fichier ``url.py``
+
+``` python
+# merchex/urls.py
+
+urlpatterns = [
+  ...
+    path('bands/', views.band_list, name='band_list'),
+    path('bands/<int:band_id>/', views.band_detail, name='band_detail'),
+    path('bands/add/', views.band_create, name='band_create'),
+...
+```
+
+### U : Update
+
+On va utiliser le même formulaire que pour la création d'une entité.
+
+On crée dans la fonction dans le fichier ``view.py`` :
+
+``` python
+def band_edit(request, band_id):
+  band = Band.objects.get(id=band_id)
+  if request.method == 'POST':
+    form = BandForm(request.POST, instance=band)
+    if form.is_valid():
+      band = form.save()
+      return redirect('band_detail', band_id=band.id)
+  else:
+    form = BandForm(instance=band)
+  return render(request,
+                'listings/band_edit.html',
+                {'form': form}
+                )
+```
+
+Le fichier ``url.py`` :
+``` python
+# merchex/urls.py
+
+urlpatterns = [
+  ...
+    path('bands/', views.band_list, name='band_list'),
+    path('bands/<int:band_id>/', views.band_detail, name='band_detail'),
+    path('bands/add/', views.band_create, name='band_create'),
+    path('bands/<int:band_id>/edit/', views.band_edit, name='band_edit'),
+...
+```
+
+### D : Delete
+
+On va utiliser le même formulaire que pour la création d'une entité.
+
+On crée dans la fonction dans le fichier ``view.py`` :
+
+``` python
+def band_delete(request, band_id):
+  band = Band.objects.get(id=band_id)
+  if request.method == 'POST':
+    band.delete()
+    return redirect('band_list')
+
+  return render(request,
+                'listings/band_delete.html',
+                {'band': band}
+                )
+
+```
+
+Le fichier ``url.py`` :
+``` python
+# merchex/urls.py
+
+urlpatterns = [
+  ...
+    path('bands/', views.band_list, name='band_list'),
+    path('bands/<int:band_id>/', views.band_detail, name='band_detail'),
+    path('bands/add/', views.band_create, name='band_create'),
+    path('bands/<int:band_id>/edit/', views.band_edit, name='band_edit'),
+    path('bands/<int:band_id>/delete/', views.band_delete, name='band_delete'),
+...
+```
+
+### Les templates des différentes pages nécessaire au CRUD :
+
+#### Liste et vue détaillée
+
+- band_list.html
+``` html
+{% extends 'listings/base.html' %}
+
+{% block content %}
+
+  <h1>Mes Groupes !</h1>
+  <a href="{% url 'band_create' %}">Créer un nouveau groupe</a>
+  <!-- TODO : liste des groupes -->
+  <p>J'ai {{ bands|length }} groupes préférés.</p>
+  <p>Mes groupes préférés sont :</p>
+  <ul>
+    {% for band in bands %}
+      <li>
+        <a href="{% url 'band_detail' band.id %}">{{ band.name }}</a> -
+        <a href="{% url 'band_edit' band.id %}">Edit</a>
+        <a href="{% url 'band_delete' band.id %}">Supprimer</a>
+      </li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}
+```
+
+- band_detail.html
+
+``` html
+{% extends 'listings/base.html' %}
+
+{% block content %}
+
+<h2>{{ band.name }}</h2>
+
+<ul>
+ <li>Genre : {{ band.get_genre_display }}</li>
+ <li>Année de formation : {{ band.year_formed }}</li>
+ <li>Actif : {{ band.active|yesno:"oui,non" }}</li>
+ {% if band.official_homepage %}
+  <li><a href="{{ band.official_homepage }}">{{ band.official_homepage }}</a></li>
+ {% endif %}
+ {% for listing in band.listing_set.all %}
+  <li><a href="{% url 'listing_detail' listing.id %}">{{ listing.title }}</a></li>
+ {% endfor %}
+</ul>
+
+<p>{{ band.biography }}</p>
+<a href="{% url 'band_edit' band.id %}">Modifier ce groupe</a>
+<a href="{% url 'band_delete' band.id %}">Supprimer ce groupe</a>
+<a href="{% url 'band_list' %}">Retour à tous les groupes</a>
+
+{% endblock %}
+```
+
+#### Create
+
+- band_create.html
+
+``` html
+{% extends 'listings/base.html' %}
+
+{% block content %}
+
+<!-- formulaire création band -->
+<h1>Créer un nouveau groupe</h1>
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Envoyer">
+</form>
+
+{% endblock %}
+```
+
+#### Update
+
+- band_edit.html
+
+``` html
+{% extends 'listings/base.html' %}
+
+{% block content %}
+
+<!-- formulaire création band -->
+<h1>Mise à jour du groupe</h1>
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Envoyer">
+
+</form>
+
+<a href="{% url 'band_delete' band.id %}">Supprimer ce groupe</a>
+
+{% endblock %}
+```
+
+#### Delete
+
+- band_delete.html
+
+``` html
+{% extends 'listings/base.html' %}
+
+{% block content %}
+
+<h1>Supprimer le groupe</h1>
+
+<p>Etes-vous sûr de vouloir supprimer le groupe : {{ band.name }} ?</p>
+
+<form action="" method="post">
+  {% csrf_token %}
+  <input type="submit" value="Supprimer">
+</form>
+
+{% endblock %}
+```
+
+## Construire une application d'authentification dans Django
+
+Pour cette partie et les suivantes, le scénario est :
+**Apprenez à l’aide d’un scénario professionnel**
+
+Un collectif de photographes cherche un moyen de montrer et de partager son travail à un large public. Ils veulent pouvoir mettre leurs photos en ligne et créer des posts à leur sujet sur un blog. Ils ont fait appel à vous en tant que développeur Django, et vous ont demandé de créer une application web qui leur permette justement de faire cela. Ils ont besoin d’avoir deux types d’utilisateurs, les abonnés et les créateurs. Seuls les créateurs doivent pouvoir créer du contenu. Ce contenu doit ensuite être partagé dans un flux social, et les abonnés doivent pouvoir choisir quels créateurs ils veulent suivre.
+
+**Iniatilisation du projet Django**
+
+``` sh
+~/  → mkdir fotoblog && cd fotoblog
+~/fotoblog  → python -m venv  ENV
+~/fotoblog  → source ENV/bin/activate #linux
+~/fotoblog  → source env/Scripts/activate #windows
+(ENV) ~/fotoblog  → pip install django
+(ENV) ~/fotoblog → pip freeze > requirements.txt
+(ENV) ~/fotoblog  → django-admin startproject fotoblog .
+(ENV) ~/fotoblog  → python manage.py startapp authentication
+(ENV) ~/fotoblog  → python manage.py startapp blog
+```
+**Ajouter les applications**
+``` python
+# fotoblog/settings.py
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'authentication',
+    'blog',
+]
+LANGUAGE_CODE = 'fr-fr'
+```
+### Personnalisez le modèle utilisateur Django
+
+Django fourni un modèle **User** par défaut. Ce modèle possède de nombreuses méthodes et fonctionnalités spéciales, en particulier pour ce qui concerne l'authentification et les persmissions. Cela lui permet de s'intégrer automatiquement au framework Django.
+
+[Doc Modèle User](https://docs.djangoproject.com/fr/4.2/ref/contrib/auth/)
+
+Voici une vue d’ensemble de certains champs du modèle ``User`` :
+- ``username``  (nom d’utilisateur) — utilisé pour se connecter
+- ``first_name``  (prénom)
+- ``last_name``  (nom de famille)
+- ``email``
+- ``password``  (mot de passe) — les mots de passe sont stockés après hachage dans la base de données. Ne sauvegardez jamais de mots de passe en clair.
+- ``is_staff``  (est un membre du personnel) — un booléen ; détermine si un utilisateur peut se connecter au site administrateur Django.
+- ``is_active``  (est actif) — un booléen ; on considère que c’est une meilleure pratique avec Django de signaler que des utilisateurs sont inactifs en réglant cet attribut sur  False  plutôt que de les supprimer.
+- ``is_superuser``  (est un superutilisateur) — un booléen ; les superusers, ou superutilisateurs, obtiennent automatiquement toutes les permissions, telles que l’accès au site administrateur.
+
+Si tous ces champs ne sont pas nécessaire à notre usage, ou, au contraire, si on a besoin de tous ces champs et d’autres en plus, on n'a pas à se limiter au modèle par défaut. On peut le personnaliser.
+
+[Doc personnalisation User](https://docs.djangoproject.com/fr/4.2/topics/auth/customizing/)
+
+Il est d'ailleurs toujours conseillé d'utiliser un modèle personnalisé de ``User``, même s'il est identique au modèle par défaut. La raison est qu'il est difficile et compliqué de migrer vers un modèle personnalisé après la configuration de notre application Django et l'exécution des migrations initiales, cela demande beaucoup de migrations délicates et une bonne compréhension en profondeur du SQL. Comme les projets changent et les clients aussi, il vaut mieux configurer un ``User`` personnalisé dès le début du projet.
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+
+
+### Personnaliser le modèle utilisateur
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
 
 ``` python
 ```
@@ -1159,6 +1790,623 @@ Attention : cette technique ne fonctionne que si les migrations n'affectent pas 
 ``` python
 ```
 
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+
+
+
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+
+
+
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+
+
+
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+
+
+
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+
+
+
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+
+
+
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+
+
+
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+
+
+
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
+
+``` python
+```
 ``` python
 ```
 
